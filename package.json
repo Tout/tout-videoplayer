@@ -1,0 +1,36 @@
+{
+  "name": "tout-videoplayer",
+  "version": "1.0.0",
+  "description": "<tout-videoplayer /> custom element",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tout/tout-videoplayer.git"
+  },
+  "author": "Chris Richards",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Tout/tout-videoplayer/issues"
+  },
+  "homepage": "https://github.com/Tout/tout-videoplayer#readme",
+  "devDependencies": {
+    "babel-loader": "^7.1.4",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "expect.js": "^0.3.1",
+    "http-server": "^0.11.1",
+    "mocha": "^5.1.1",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.14",
+    "webpack-notifier": "^1.6.0"
+  },
+  "dependencies": {
+    "document-register-element": "^1.8.1",
+    "hyperhtml": "^2.10.0"
+  }
+}

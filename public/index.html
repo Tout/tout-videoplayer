@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+<!-- <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script> -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> -->
+<script defer src="tout_videoplayer.js"></script>
+<title>tout-videoplayer test page</title>
+
+<h1>All sources</h1>
+<tout-videoplayer>
+  <source src="http://tungsten.aaplimg.com/VOD/bipbop_adv_example_hevc/master.m3u8" type="application/x-mpegURL">
+  <source src="http://rdmedia.bbc.co.uk/dash/ondemand/testcard/1/client_manifest-events.mpd" type="application/dash+xml">
+  <source src="http://i.giphy.com/media/3o6Mb9yZsVqPb61f0c/giphy.mp4" type="video/mp4">
+</tout-videoplayer>
+
+
+
+
+<h1>HLS</h1>
+<tout-videoplayer  autoplay loop controls>
+  <source src="https://tungsten.aaplimg.com/VOD/bipbop_adv_example_hevc/master.m3u8" type="application/x-mpegURL">
+</tout-videoplayer>
+
+
+<h1>MPEG-DASH</h1>
+<tout-videoplayer  autoplay loop controls>
+  <source src="http://rdmedia.bbc.co.uk/dash/ondemand/testcard/1/client_manifest-events.mpd" type="application/dash+xml">
+</tout-videoplayer>
+
+
+<h1>MP4</h1>
+<h2>src attribute</h2>
+<tout-videoplayer src="https://media.giphy.com/media/3o8doT9BL7dgtolp7O/giphy.mp4" autoplay loop controls></tout-videoplayer>
+
+<h2>source element</h2>
+<tout-videoplayer  autoplay loop controls>
+  <source src="https://media.giphy.com/media/3o8doT9BL7dgtolp7O/giphy.mp4" type="video/mp4">
+</tout-videoplayer>
