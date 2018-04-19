@@ -11,23 +11,18 @@ export default function findBestSource(hasHLSSupport, hasDashSupport, sourceList
 
   // HLS has mobile support, so it gets priority.
   if (hasHLSSupport && sourceHLS) {
-    console.log('native HLS', sourceHLS);
     return sourceHLS;
   }
   // Use Dash if it's supported.
   else if (hasDashSupport && sourceDash) {
-    console.log('native Dash', sourceDash);
     return sourceDash;
   }
   // Load HLS support before picking anything else
   else if (sourceHLS) {
-    console.log('load HLS', sourceHLS);
     return sourceHLS;
   }
   // Load Dash support before falling back to mp4
   else if (sourceDash) {
-    //TODO: add
-    console.log('load Dash', sourceDash);
     return sourceDash
   }
   // all else fails use mp4
