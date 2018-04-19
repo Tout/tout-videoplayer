@@ -3,8 +3,9 @@ import { hyper } from 'hyperhtml/esm';
 
 import childrenToSourceList from './util/childrenToSourceList.js';
 import findBestSource from './util/findBestSource.js';
-import setSourceType from './util/setSourceType.js';
 import loadHLS from './util/loadHLS.js';
+import hydrateSource from './util/hydrateSource.js';
+import MIME from './const/MIME.js';
 
 class ToutVideoPlayer extends HTMLElement {
   // https://github.com/WebReflection/document-register-element#upgrading-the-constructor-context
@@ -33,15 +34,20 @@ class ToutVideoPlayer extends HTMLElement {
    * Renders/Updates the element.
    */
   connectedCallback() {
+    // console.log('connectedCallback');
     // this.children is an HTMLCollection which is live.
     // So we need to make a copy before we call render.
     const children = Array.from(this.children);
     // Render first because we will need a video element to set the source.
     this.render();
-    // Convert any child <source> elements into our source list.
-    // then set the source type helper properties
-    this.sourceList = childrenToSourceList(children)
-      .map(setSourceType);
+
+    // set the sourceList based on the children
+    if (children.length > 0) {
+      // Convert any child <source> elements into source objects.
+      // Then hydrate those source objects.
+      // Finnaly start loading of the source by setting sourceList.
+      this.sourceList = childrenToSourceList(children).map(hydrateSource);
+    }
 
     // listen for events
     // document.addEventListener('click', this)
@@ -56,6 +62,30 @@ class ToutVideoPlayer extends HTMLElement {
     // document.removeEventListener('click', this);
   }
 
+
+  /**
+   * When one of these attributes changes value, it triggers attributeChangedCallback
+   * @return {Array} attribute names.
+   */
+  static get observedAttributes() { return ['src']; }
+  /**
+   * Triggered when an an observedAttribute has changed.
+   * @param {String} attrName - the attribute name.
+   * @param {Object} oldValue - the old value.
+   * @param {Object} newValue - the new value.
+   */
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    // we only care about changes.
+    if (oldValue === newValue) { return; }
+    // console.log('attributeChangedCallback', attrName, oldValue, newValue);
+
+    // Render so if we set src, the video element will exist.
+    //TODO: Fix this so we don't need to call render here.
+    //    : I think it's just an order of operations bug.
+    this.render();
+    this[attrName] = newValue;
+  }
+
   /**
    * EventListener Interface
    * @param {Event} event - the event.
@@ -68,32 +98,24 @@ class ToutVideoPlayer extends HTMLElement {
   }
 
   // https://html.spec.whatwg.org/multipage/media.html#attr-media-src
+  // > The src IDL attribute on media elements must reflect the content attribute of the same name
   get src() {
     return this.getAttribute('src');
   }
   set src(value) {
-    this.setAttribute('src', value);
+    // update the sourceList which is the real value used.
+    this.sourceList =[hydrateSource({
+      src: value,
+    })];
   }
 
   /**
    * An array of source objects.
    * @return {Array}
    */
-  get sources() {
-    return this.sourceList;
-  }
   get sourceList() {
-    const { src, _sourceList } = this;
-    // if we have a source list, use it.
-    if (_sourceList.length > 0) {
-      return _sourceList;
-    }
-    // else fallback to the src attribute.
-    return [{
-      src,
-      //TODO: pick the real type based on the src filename
-      type: 'video/mp4',
-    }];
+    const { _sourceList } = this;
+    return _sourceList;
   }
   /**
    * Picks the best source from the list,
@@ -102,13 +124,14 @@ class ToutVideoPlayer extends HTMLElement {
    * @param {Array} value - Array of source objects.
    */
   set sourceList(value) {
+    // make sure we have a value before trying to set.
     if (!value || value.length === 0) { return; }
     const { hasHLSSupport, hasDashSupport } = this;
     const source = findBestSource(hasHLSSupport, hasDashSupport, value);
 
     // Do we need to load the HLS Support?
-    if (source.isHLS && !hasHLSSupport) {
-      // Load HLS Support
+    if (!hasHLSSupport && source.type === MIME.HLS) {
+      // Attach the HLS library to our video element.
       loadHLS().then((Hls) => {
         // Add HLS support to the existing elVideo
         this.hls = new Hls();
@@ -117,7 +140,7 @@ class ToutVideoPlayer extends HTMLElement {
         this.srcObject = source;
       });
     }
-    else if (source.isDash && !hasDashSupport) {
+    else if (!hasDashSupport && source.type === MIME.DASH) {
       //TODO: add Dash support
     }
     else {
@@ -167,27 +190,27 @@ class ToutVideoPlayer extends HTMLElement {
     this._currentSrc = value;
 
     // MP4 is easy because everyone supports it.
-    if (value.isMP4) {
+    if (value.type === MIME.MP4) {
       elVideo.src = value.src;
     }
     // Native HLS Support
-    else if (hasHLSSupport && value.isHLS) {
+    else if (hasHLSSupport && value.type === MIME.HLS) {
       elVideo.src = value.src;
     }
     // Native Dash Support
-    else if (hasDashSupport && value.isDash) {
+    else if (hasDashSupport && value.type === MIME.DASH) {
       elVideo.src = value.src;
     }
     // Use Hls.js API
-    else if (value.isHLS) {
+    else if (value.type === MIME.HLS) {
       hls.loadSource(value.src);
     }
     // use Dash.js
-    else if (value.isDash) {
+    else if (value.type === MIME.DASH) {
       //TODO: add
     }
     else {
-      throw new Error('Unsupported video type', value);
+      throw new Error(`Unsupported video type: "${value.type}"`);
     }
   }
 

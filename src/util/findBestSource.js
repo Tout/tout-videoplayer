@@ -1,3 +1,4 @@
+import MIME from '../const/MIME.js';
 
 /**
  * Returns the best source object to load based on browser support.
@@ -5,9 +6,9 @@
  * @return {Object}
  */
 export default function findBestSource(hasHLSSupport, hasDashSupport, sourceList) {
-  const sourceHLS = sourceList.find(i => i.isHLS);
-  const sourceDash = sourceList.find(i => i.isDash);
-  const sourceMP4 = sourceList.find(i => i.isMP4);
+  const sourceHLS = sourceList.find(i => i.type === MIME.HLS);
+  const sourceDash = sourceList.find(i => i.type === MIME.DASH);
+  const sourceMP4 = sourceList.find(i => i.type === MIME.MP4);
 
   // HLS has mobile support, so it gets priority.
   if (hasHLSSupport && sourceHLS) {
