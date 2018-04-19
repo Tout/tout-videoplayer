@@ -23,8 +23,8 @@ export default function findBestSource(hasHLSSupport, hasDashSupport, sourceList
   }
   // Load Dash support before falling back to mp4
   else if (sourceDash) {
-    return sourceDash
+    return sourceDash;
   }
   // all else fails use mp4
-  return sourceMP4
+  return sourceMP4;
 }

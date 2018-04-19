@@ -27,6 +27,7 @@ export default function loadHLS() {
       return Hls;
     })
     .catch((err) => {
+      // eslint-disable-next-line no-console
       console.error('fetch error', err);
     });
 }

@@ -2,7 +2,6 @@ import 'document-register-element';
 import { hyper } from 'hyperhtml/esm';
 
 import childrenToSourceList from './util/childrenToSourceList.js';
-import loadExternalSupport from './util/loadExternalSupport.js';
 import findBestSource from './util/findBestSource.js';
 import setSourceType from './util/setSourceType.js';
 import loadHLS from './util/loadHLS.js';
@@ -23,26 +22,10 @@ class ToutVideoPlayer extends HTMLElement {
    * (re)Renders the element based on current state.
    */
   render() {
-    const { currentSrc } = this;
     // Rendering the content with hyperHTML.
-    this.hyperHTML`<div>
+    return this.hyperHTML`<div>
       <video controls></video>
     </div>`;
-
-    // load the source based on the source type.
-    // const elVideo = this.querySelector('video');
-
-    // this.hyperHTML`<div>
-    //   <video controls>
-    //     ${sources.map((source) => {
-    //       return hyper.wire(source)`
-    //         <source
-    //          src=${source.src}
-    //          type=${source.type}
-    //        >`;
-    //     })}
-    //   </video>
-    // </div>`;
   }
 
   /**
@@ -50,39 +33,15 @@ class ToutVideoPlayer extends HTMLElement {
    * Renders/Updates the element.
    */
   connectedCallback() {
-    console.log('connectedCallback', this);
     // this.children is an HTMLCollection which is live.
     // So we need to make a copy before we call render.
     const children = Array.from(this.children);
-    // Render first so if there are any sources specified we can start loading.
+    // Render first because we will need a video element to set the source.
     this.render();
     // Convert any child <source> elements into our source list.
     // then set the source type helper properties
     this.sourceList = childrenToSourceList(children)
       .map(setSourceType);
-    // Load any 3rd party support libraries we might need.
-    // loadExternalSupport(this.hasHLSSupport, this.hasDashSupport, this._sourceList)
-    //   .then(function() {
-    //     console.log('Use support library', arguments);
-    //   })
-    //   .catch(() => {
-    //     debugger;
-    //   });
-    // if a source contains HLS, and the browser does not support it, load support.
-    //TODO: check if all the sources require hls
-    // if (!this.supportsHLS) {
-      // loadHLS().then((Hls) => {
-      //   const elVideo = this.querySelector('video');
-      //   const hls = new Hls();
-      //   const src = this._sourceList.find(i => i.type === 'application/x-mpegURL');
-      //   hls.loadSource(src.src);
-      //   hls.attachMedia(elVideo);
-      //   hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      //     //TODO: check if we should autoplay
-      //     elVideo.play();
-      //   });
-      // });
-    // }
 
     // listen for events
     // document.addEventListener('click', this)
@@ -102,9 +61,8 @@ class ToutVideoPlayer extends HTMLElement {
    * @param {Event} event - the event.
    * @link https://medium.com/@WebReflection/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
    */
-  handleEvent(event) {
-    const { type, target } = event;
-
+  handleEvent() {
+    // const { type, target } = event;
     // re-render
     this.render();
   }
@@ -144,29 +102,26 @@ class ToutVideoPlayer extends HTMLElement {
    * @param {Array} value - Array of source objects.
    */
   set sourceList(value) {
-    console.log('set sourceList', value);
     if (!value || value.length === 0) { return; }
     const { hasHLSSupport, hasDashSupport } = this;
     const source = findBestSource(hasHLSSupport, hasDashSupport, value);
-    // Load any 3rd party support libraries we might need.
+
+    // Do we need to load the HLS Support?
     if (source.isHLS && !hasHLSSupport) {
       // Load HLS Support
       loadHLS().then((Hls) => {
-        console.log('loaded HLS support');
+        // Add HLS support to the existing elVideo
         this.hls = new Hls();
         this.hls.attachMedia(this.elVideo);
+        // Start loading the source now that we support it.
         this.srcObject = source;
       });
     }
     else if (source.isDash && !hasDashSupport) {
-      // Load Dash Support
-      // trigger loadstart event
-      console.log('load Dash support');
-      // trigger loadend event
+      //TODO: add Dash support
     }
     else {
-      // We are supported!
-      console.log('use like normal');
+      // The browser already supports the source.
       this.srcObject = source;
     }
   }
@@ -199,24 +154,16 @@ class ToutVideoPlayer extends HTMLElement {
    * https://html.spec.whatwg.org/multipage/media.html#dom-media-srcobject
    * @return {Object}
    */
-  // get srcObject() {
-  //   const { sources } = this;
-  //   // if there is only one souce, no need to check
-  //   if (sources.length === 1) { return sources[0]; }
-  //   //TODO: return the correct source object
-  // }
   get srcObject() {
     return this._currentSrc;
   }
   /**
    * Setting srcObject will start loading the video.
-   * This replicated standard DOM behaviour where the async call starts when setting src/srcObject
+   * This replicates standard DOM behaviour where the async call starts when setting src/srcObject
    * @param  {Object} value
    */
   set srcObject(value) {
-    console.log('set srcObject', value);
     const { elVideo, hasHLSSupport, hls, hasDashSupport } = this;
-    //TODO: Setting the source should start loading just like it does for other HTML elements.
     this._currentSrc = value;
 
     // MP4 is easy because everyone supports it.
