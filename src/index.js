@@ -42,12 +42,23 @@ class ToutVideoPlayer extends HTMLElement {
    */
   connectedCallback() {
     console.log('connectedCallback', this);
+    // Convert any child <source> elements into our source list.
     this._sourceList = childrenToSourceList(this.children);
     // if a source contains HLS, and the browser does not support it, load support.
-    console.log('supportsHLS', this.supportsHLS);
-    loadHLS().then((Hls) => {
-      console.log('do soemthing with Hls');
-    });
+    //TODO: check if all the sources require hls
+    if (!this.supportsHLS) {
+      loadHLS().then((Hls) => {
+        const elVideo = this.querySelector('video');
+        const hls = new Hls();
+        const src = this._sourceList.find(i => i.type === 'application/x-mpegURL');
+        hls.loadSource(src.src);
+        hls.attachMedia(elVideo);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          //TODO: check if we should autoplay
+          elVideo.play();
+        });
+      });
+    }
 
     this.render();
     // listen for events
