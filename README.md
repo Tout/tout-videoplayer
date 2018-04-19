@@ -4,8 +4,12 @@ The ToutVideoPlayer as a custom element.
 ## Goal
 A lightweight alternate to players like Video.js or ToutVideoPlayer.
 Look and feel like <video> with enhanced abilities.
+* https://html.spec.whatwg.org/multipage/media.html#the-video-element
+* https://html.spec.whatwg.org/multipage/media.html#htmlmediaelement
 
 * Focused on playing video and ad.
+* Mobile first.
+  * Only load resources when absolutely needed.
 * Responsive sizing.
 * Uses the same API as the standard <video> element.
 * Can play HLS/Mpeg-Dash/MP4 videos

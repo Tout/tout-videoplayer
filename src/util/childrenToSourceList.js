@@ -5,7 +5,7 @@
  * @return {Array}
  */
 export default function childrenToSourceList(children) {
-  return Array.from(children).reduce((acc, elm) => {
+  return children.reduce((acc, elm) => {
     if (elm.nodeName !== 'SOURCE') { return acc; }
     const { src, type } = elm;
 

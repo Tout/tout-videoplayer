@@ -1,8 +1,11 @@
-
 /**
- * Loads HLS support.
+ * Load HLS support.
+ * @return {Promise} then(Hls) returns the Hls class.
  */
 export default function loadHLS() {
+  //QUESTION: If window.Hls exists on the page, should we use it instead of loading our own support?
+  //        : The risk is that something would be incompatable, and the playback would fail.
+  //        : Also, the browser will de-dupe and cache, so the cost is re-evaling the HLS script.
   return fetch('https://cdn.jsdelivr.net/npm/hls.js@latest', {
     method: 'GET',
   })
