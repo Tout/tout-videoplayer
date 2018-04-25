@@ -3,7 +3,6 @@ import hyperHTML from 'hyperhtml/cjs';
 import childrenToSourceList from './util/childrenToSourceList.js';
 import findBestSource from './util/findBestSource.js';
 import loadHLS from './util/loadHLS.js';
-import loadDASH from './util/loadDASH.js';
 import hydrateSource from './util/hydrateSource.js';
 import MIME from './const/MIME.js';
 
@@ -139,14 +138,6 @@ class ToutVideoPlayer extends HTMLElement {
         this.srcObject = source;
       });
     }
-    else if (!hasDashSupport && source.type === MIME.DASH) {
-      loadDASH().then((Dash) => {
-        this.dashjs = Dash.MediaPlayer().create();
-        this.dashjs.initialize(this.elVideo);
-        // Start loading the source now that we support it.
-        this.srcObject = source;
-      });
-    }
     else {
       // The browser already supports the source.
       this.srcObject = source;
@@ -170,13 +161,6 @@ class ToutVideoPlayer extends HTMLElement {
     this._supportsHLS = elVideo.canPlayType(MIME.HLS) !== '';
     return this._supportsHLS;
   }
-  get hasDashSupport() {
-    // no browser has native mpeg-dash support.
-    // firefox and IEEdge had support in the past, but not currently.
-    // firefox removed support because they want people to use the mpeg-dash libary instead.
-    return false;
-  }
-
 
   /**
    * Returns the current source object to use.
@@ -192,7 +176,7 @@ class ToutVideoPlayer extends HTMLElement {
    * @param  {Object} value
    */
   set srcObject(value) {
-    const { elVideo, hasHLSSupport, hls, hasDashSupport, dashjs } = this;
+    const { elVideo, hasHLSSupport, hls } = this;
     this._currentSrc = value;
 
     // MP4 is easy because everyone supports it.
@@ -203,17 +187,9 @@ class ToutVideoPlayer extends HTMLElement {
     else if (hasHLSSupport && value.type === MIME.HLS) {
       elVideo.src = value.src;
     }
-    // Native Dash Support
-    else if (hasDashSupport && value.type === MIME.DASH) {
-      elVideo.src = value.src;
-    }
     // Use Hls.js API
     else if (value.type === MIME.HLS) {
       hls.loadSource(value.src);
-    }
-    // use Dash.js
-    else if (value.type === MIME.DASH) {
-      dashjs.attachSource(value.src);
     }
     else {
       throw new Error(`Unsupported video type: "${value.type}"`);
